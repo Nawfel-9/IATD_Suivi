@@ -205,6 +205,12 @@ async function loadData() {
   if (isFirestoreConfigured()) {
     try {
       const response = await fetch(getFirestoreDocumentUrl());
+      if (response.status === 404) {
+        state.data = loadLocalData() || cloneData(fallbackData);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.data));
+        setSyncStatus("Firestore prêt : ajoutez ou modifiez une entrée pour créer le cahier partagé.");
+        return;
+      }
       if (!response.ok) {
         throw new Error(`Erreur Firestore ${response.status}`);
       }
