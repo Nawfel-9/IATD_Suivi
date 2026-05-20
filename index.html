@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>IATD Cahier - Suivi des Projets & Devoirs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <button class="lock-button" id="adminToggle" type="button" aria-label="Ouvrir le mode administrateur" title="Mode administrateur">
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M7 10V8a5 5 0 0 1 10 0v2"></path>
+        <rect x="5" y="10" width="14" height="10" rx="1.5"></rect>
+        <path d="M12 14v2.5"></path>
+      </svg>
+    </button>
+
+    <button class="info-button" id="infoToggle" type="button" aria-label="Informations sur les développeurs" title="Informations">
+      i
+    </button>
+
+    <main class="page-shell">
+      <header class="document-header">
+        <p class="academy-line">Intelligence Artificielle et technologie de donnée : système industriel</p>
+        <h1>IATD Cahier</h1>
+        <p class="subtitle">Suivi des Projets &amp; Devoirs</p>
+        <div class="document-rule"></div>
+      </header>
+
+      <section class="summary" aria-label="Résumé général">
+        <article>
+          <span id="projectsInProgress">0</span>
+          <p>projets en cours</p>
+        </article>
+        <article>
+          <span id="assignmentsInProgress">0</span>
+          <p>travaux en cours</p>
+        </article>
+        <article>
+          <span id="projectsDone">0</span>
+          <p>projets terminés</p>
+        </article>
+        <article>
+          <span id="assignmentsDone">0</span>
+          <p>travaux terminés</p>
+        </article>
+      </section>
+
+      <div class="sync-line" id="syncStatus" role="status">Chargement du cahier...</div>
+
+      <nav class="year-tabs" aria-label="Années de formation">
+        <button class="year-button active" type="button" data-year="troisieme" aria-selected="true">3e année</button>
+        <button class="year-button" type="button" data-year="quatrieme" aria-selected="false">4e année</button>
+        <button class="year-button" type="button" data-year="cinquieme" aria-selected="false">5e année</button>
+      </nav>
+
+      <nav class="tabs" aria-label="Sections du cahier">
+        <button class="tab-button active" type="button" data-tab="projets" aria-selected="true">1. Projets</button>
+        <button class="tab-button" type="button" data-tab="devoirs" aria-selected="false">2. Devoirs</button>
+      </nav>
+
+      <section class="admin-strip hidden" id="adminStrip" aria-label="Outils administrateur">
+        <p>Mode administrateur actif</p>
+        <div>
+          <button class="ink-button" type="button" data-action="add" data-kind="projets">Ajouter un projet</button>
+          <button class="ink-button" type="button" data-action="add" data-kind="devoirs">Ajouter un devoir</button>
+          <button class="text-button" id="adminLogout" type="button">Quitter</button>
+        </div>
+      </section>
+
+      <section class="tab-panel active" id="panel-projets" data-panel="projets" aria-labelledby="heading-projets">
+        <div class="section-heading">
+          <span>1</span>
+          <h2 id="heading-projets">Projets</h2>
+        </div>
+        <div class="card-list" id="projectsList" aria-live="polite"></div>
+      </section>
+
+      <section class="tab-panel" id="panel-devoirs" data-panel="devoirs" aria-labelledby="heading-devoirs">
+        <div class="section-heading">
+          <span>2</span>
+          <h2 id="heading-devoirs">Devoirs</h2>
+        </div>
+        <div class="card-list" id="assignmentsList" aria-live="polite"></div>
+      </section>
+
+      <section class="admin-reset hidden" id="adminReset" aria-label="Remise à zéro">
+        <p id="resetYearText">Remise à zéro de l'année sélectionnée</p>
+        <button class="danger-button" id="resetYearButton" type="button">Réinitialiser cette année</button>
+      </section>
+    </main>
+
+    <div class="modal-backdrop hidden" id="passwordModal" role="dialog" aria-modal="true" aria-labelledby="passwordTitle">
+      <div class="modal">
+        <button class="modal-close" type="button" data-close="password" aria-label="Fermer">×</button>
+        <p class="modal-kicker">Accès réservé</p>
+        <h2 id="passwordTitle">Mode administrateur</h2>
+        <form id="passwordForm">
+          <label for="adminPassword">Mot de passe</label>
+          <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Saisir le mot de passe">
+          <p class="form-error" id="passwordError" aria-live="polite"></p>
+          <button class="ink-button full" type="submit">Déverrouiller</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-backdrop hidden" id="entryModal" role="dialog" aria-modal="true" aria-labelledby="entryTitle">
+      <div class="modal wide">
+        <button class="modal-close" type="button" data-close="entry" aria-label="Fermer">×</button>
+        <p class="modal-kicker" id="entryKicker">Nouvelle entrée</p>
+        <h2 id="entryTitle">Ajouter</h2>
+        <form id="entryForm" class="entry-form">
+          <input type="hidden" id="entryKind">
+          <input type="hidden" id="entryId">
+
+          <div class="form-grid">
+            <div class="field">
+              <label id="primaryLabel" for="primaryInput">Module</label>
+              <input id="primaryInput" required placeholder="Nom du module">
+            </div>
+            <div class="field">
+              <label id="titleLabel" for="titleInput">Titre</label>
+              <input id="titleInput" required placeholder="Titre du travail">
+            </div>
+          </div>
+
+          <div class="field">
+            <label id="descriptionLabel" for="descriptionInput">Description</label>
+            <textarea id="descriptionInput" rows="4" placeholder="Décrire brièvement le travail attendu"></textarea>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label id="deadlineLabel" for="deadlineInput">Date limite</label>
+              <input id="deadlineInput" type="datetime-local" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="noteInput">Note optionnelle</label>
+            <input id="noteInput" placeholder="Observation, groupe, consigne particulière...">
+          </div>
+
+          <button class="ink-button full" type="submit">Enregistrer dans le cahier</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-backdrop hidden" id="infoModal" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+      <div class="modal">
+        <button class="modal-close" type="button" data-close="info" aria-label="Fermer">×</button>
+        <p class="modal-kicker">Informations</p>
+        <h2 id="infoTitle">À propos du cahier</h2>
+        <div class="info-content">
+          <p>Ce travail a été réalisé par :</p>
+          <ul>
+            <li>EL KHAMKHOUMI Naoufal</li>
+            <li>BAQUA Abdellah</li>
+            <li>BOUABDILLAH Hachim</li>
+          </ul>
+          <p>Sous la supervision de <strong>Pr. I. EL HASSANI</strong>.</p>
+          <p>Pour toute aide, contacter : <strong>0628-628248</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <template id="emptyStateTemplate">
+      <div class="empty-state">
+        <p>Aucune entrée pour cette section.</p>
+      </div>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
